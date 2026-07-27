@@ -25,6 +25,7 @@ return {
       wk.add({ "<leader>c", desc = "Comment", icon = "󰚰" })
       wk.add({ "<leader>m", desc = "Msg", icon = "" })
       wk.add({ "<leader>s", desc = "Shell", icon = "" })
+      wk.add({ "<leader>a", desc = "Athanor", icon = "󰪶" })
 
       -- Sub-entries to ensure visibility in which-key
       wk.add({ "<leader>ff", desc = "find: files", mode = "n" })
