@@ -21,6 +21,55 @@ return {
         vim.diagnostic.jump({ count = 1, float = true })
       end, { desc = "lsp: next diag", noremap = true, silent = true })
 
+      vim.api.nvim_create_autocmd('WinNew', {
+        callback = function()
+          local win_id = vim.api.nvim_get_current_win()
+          vim.schedule(function()
+            if not vim.api.nvim_win_is_valid(win_id) then return end
+            local ok, source_bufnr = pcall(vim.api.nvim_win_get_var, win_id, 'textDocument/hover')
+            if not ok or not vim.api.nvim_buf_is_valid(source_bufnr) then return end
+            if vim.api.nvim_get_current_buf() ~= source_bufnr then return end
+
+            local hover_bufnr = vim.api.nvim_win_get_buf(win_id)
+            vim.keymap.set('n', '<Esc>', function()
+              if vim.api.nvim_win_is_valid(win_id) then
+                vim.api.nvim_win_close(win_id, true)
+              end
+            end, { buffer = hover_bufnr, silent = true, desc = 'lsp: close hover' })
+
+            local function open_hover_split(split_cmd)
+              local lines = vim.api.nvim_buf_get_lines(hover_bufnr, 0, -1, false)
+              local cursor = vim.api.nvim_win_get_cursor(win_id)
+              local split_bufnr = vim.api.nvim_create_buf(false, true)
+              vim.api.nvim_buf_set_lines(split_bufnr, 0, -1, false, lines)
+              vim.bo[split_bufnr].filetype = vim.bo[hover_bufnr].filetype
+              vim.bo[split_bufnr].modifiable = false
+
+              for _, source_win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+                if vim.api.nvim_win_get_buf(source_win) == source_bufnr then
+                  vim.api.nvim_set_current_win(source_win)
+                  break
+                end
+              end
+              if vim.api.nvim_win_is_valid(win_id) then
+                vim.api.nvim_win_close(win_id, true)
+              end
+              vim.cmd(split_cmd)
+              vim.api.nvim_win_set_buf(0, split_bufnr)
+              vim.api.nvim_win_set_cursor(0, cursor)
+            end
+
+            vim.keymap.set('n', '<C-v>', function()
+              open_hover_split('vsplit')
+            end, { buffer = hover_bufnr, silent = true, desc = 'lsp: hover vertical split' })
+            vim.keymap.set('n', '<C-x>', function()
+              open_hover_split('split')
+            end, { buffer = hover_bufnr, silent = true, desc = 'lsp: hover horizontal split' })
+            vim.api.nvim_set_current_win(win_id)
+          end)
+        end,
+      })
+
       -- Buffer-local LSP setup via LspAttach (Neovim 0.11+ style)
       local aug = vim.api.nvim_create_augroup('user_lsp_attach', { clear = true })
       vim.api.nvim_create_autocmd('LspAttach', {
@@ -48,6 +97,25 @@ return {
           end
 
           local function hover()
+            local diagnostic_bufnr, diagnostic_win = vim.diagnostic.open_float({
+              scope = 'line',
+              border = 'rounded',
+              focusable = true,
+              max_width = 120,
+              max_height = 30,
+              title = ' LSP Diagnostics ',
+              title_pos = 'center',
+            })
+            if diagnostic_win then
+              vim.keymap.set('n', '<Esc>', function()
+                if vim.api.nvim_win_is_valid(diagnostic_win) then
+                  vim.api.nvim_win_close(diagnostic_win, true)
+                end
+              end, { buffer = diagnostic_bufnr, silent = true, desc = 'lsp: close diagnostics' })
+              vim.api.nvim_set_current_win(diagnostic_win)
+              return
+            end
+
             vim.lsp.buf.hover({
               border = 'rounded',
               focusable = true,
@@ -164,7 +232,7 @@ return {
       end
 
       for _, server in ipairs(lsp_servers.configs()) do
-        if installed[server.name] then
+        if server.name == 'tsc' or installed[server.name] then
           vim.lsp.config(server.name, server.config)
           vim.lsp.enable(server.name)
         end

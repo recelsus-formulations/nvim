@@ -2,8 +2,8 @@
 
 `fzf` `ripgrep` `nodejs` `npm` `cmake` `make` `tree-sitter-cli`
 
-Language servers are installed via Mason. Common servers used here:
-- TypeScript: `typescript-language-server` (ts_ls)
+Most language servers are installed via Mason. TypeScript 7 is resolved from the project or `PATH`:
+- TypeScript: `typescript` 7+ (`tsc --lsp --stdio`)
 - C/C++: `clangd`
 - Bash: `bash-language-server`
 - Lua: `lua-language-server`
@@ -14,7 +14,8 @@ Language servers are installed via Mason. Common servers used here:
 - `<leader>le`: Show diagnostics for the current cursor position in a popup
 - `[d`: Go to the previous diagnostic message
 - `]d`: Go to the next diagnostic message
-- `K`: Show hover documentation in an expanded floating window
+- `K`: Show all diagnostics on the current line from any cursor position, or LSP hover if none; focus the popup, scroll with `j`/`k` or `<C-d>`/`<C-u>`, and close with `<Esc>`
+- `<C-v>` / `<C-x>` (in LSP hover): Open the hover text in a vertical / horizontal split
 - `<leader>ld`: Jump to definition
 - `<leader>lD`: Jump to declaration, when supported by the server
 - `<leader>lt`: Jump to type definition
@@ -100,7 +101,7 @@ Language servers are installed via Mason. Common servers used here:
 Place a file under `lua/lsp/servers/<server>.lua` that returns the complete server config, including `cmd`, `filetypes`, and `root_markers`.
 
 Provided examples:
-- TypeScript (ts_ls): `lua/lsp/servers/ts_ls.lua`
+- TypeScript (tsc): `lua/lsp/servers/tsc.lua`
 - C/C++ (clangd): `lua/lsp/servers/clangd.lua`
 - Bash (bashls): `lua/lsp/servers/bashls.lua`
 - Lua (lua_ls): `lua/lsp/servers/lua_ls.lua`

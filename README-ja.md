@@ -2,8 +2,8 @@
 
 `fzf` `ripgrep` `nodejs` `npm` `cmake` `make` `tree-sitter-cli`
 
-LSP サーバーは Mason でインストールします。よく使うサーバー:
-- TypeScript: `typescript-language-server` (ts_ls)
+LSP サーバーは主に Mason でインストールします。TypeScript 7 はプロジェクト内または `PATH` から取得します:
+- TypeScript: `typescript` 7+ (`tsc --lsp --stdio`)
 - C/C++: `clangd`
 - Bash: `bash-language-server`
 - Lua: `lua-language-server`
@@ -14,7 +14,8 @@ LSP サーバーは Mason でインストールします。よく使うサーバ
 - `<leader>le`: 現在行の診断メッセージをポップアップで表示
 - `[d`: 直前の診断へ移動
 - `]d`: 次の診断へ移動
-- `K`: 拡張したフロートで hover ドキュメントを表示
+- `K`: カーソル位置によらず現在行の診断をすべて表示。診断がなければ LSP Hover を表示。フロートにフォーカスし、`j`/`k` または `<C-d>`/`<C-u>` でスクロール、`<Esc>` で閉じる
+- `<C-v>` / `<C-x>`（LSP Hover 内）: Hover の内容を縦分割 / 横分割で開く
 - `<leader>ld`: 定義へ移動
 - `<leader>lD`: 宣言へ移動（サーバーが対応している場合）
 - `<leader>lt`: 型定義へ移動
@@ -92,7 +93,7 @@ LSP サーバーは Mason でインストールします。よく使うサーバ
 `lua/lsp/servers/<server>.lua` に `cmd`, `filetypes`, `root_markers` を含む完全なサーバー設定を置きます。
 
 用意済み:
-- TypeScript (ts_ls): `lua/lsp/servers/ts_ls.lua`
+- TypeScript (tsc): `lua/lsp/servers/tsc.lua`
 - C/C++ (clangd): `lua/lsp/servers/clangd.lua`
 - Bash (bashls): `lua/lsp/servers/bashls.lua`
 - Lua (lua_ls): `lua/lsp/servers/lua_ls.lua`
